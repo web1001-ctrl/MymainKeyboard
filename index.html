@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Keyboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            margin: 0;
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .keyboard-1 {
+            width: 100%;
+            background: #e2e8f0;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px #0008;
+            border: 1px solid #ffffff50;
+        }
+
+        #display {
+            width: 100%;
+            height: 130px;
+            margin-bottom: 22px;
+            padding: 16px;
+            font-size: 24px;
+            font-family: inherit;
+            color: #f8fafc;
+            background: #0f172a;
+            border: 2px solid #475569;
+            border-radius: 12px;
+            outline: none;
+            resize: vertical;
+            line-height: 1.5;
+            caret-color: #38bdf8;
+        }
+
+        #display:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px #38bdf830;
+        }
+
+        .key-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            flex: 1 1 0;
+            min-width: 0;
+            height: 58px;
+            padding: 0 5px;
+            border: 1px solid #475569;
+            border-radius: 9px;
+            background: linear-gradient(145deg, #334155, #1e293b);
+            color: #f8fafc;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 5px 0 #0f172a;
+            transition:
+                transform 0.12s ease,
+                background 0.15s ease,
+                box-shadow 0.12s ease,
+                color 0.15s ease;
+        }
+
+        /* Sichqoncha tugma ustiga kelganda */
+        button:hover {
+            background: linear-gradient(145deg, #0ea5e9, #2563eb);
+            border-color: #38bdf8;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #0f172a;
+        }
+
+        /* Tugma bosilganda */
+        button:active {
+            transform: translateY(4px) scale(0.97);
+            box-shadow: 0 1px 0 #0f172a;
+            background: #0284c7;
+        }
+
+        /* Caps Lock va Shift yoqilgan holat */
+        button.active-key {
+            background: linear-gradient(145deg, #16a34a, #15803d);
+            border-color: #4ade80;
+            color: white;
+            box-shadow: 0 3px 0 #14532d;
+        }
+
+        button.active-key:hover {
+            background: linear-gradient(145deg, #22c55e, #16a34a);
+        }
+
+        .key-wide {
+            flex: 1.5 1 0;
+        }
+
+        .key-extra-wide {
+            flex: 2 1 0;
+        }
+
+        .key-small {
+            flex: 0.75 1 0;
+        }
+
+        #space {
+            flex: 5 1 0;
+        }
+
+        #backspace {
+            flex: 1.8 1 0;
+            background: linear-gradient(145deg, #ef4444, #b91c1c);
+            border-color: #f87171;
+        }
+
+        #backspace:hover {
+            background: linear-gradient(145deg, #f87171, #dc2626);
+        }
+
+        #enter {
+            background: linear-gradient(145deg, #7c3aed, #5b21b6);
+            border-color: #a78bfa;
+        }
+
+        #enter:hover {
+            background: linear-gradient(145deg, #a78bfa, #7c3aed);
+        }
+
+        .keyboard-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .status {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .status span {
+            padding: 7px 12px;
+            border-radius: 20px;
+            background: #cbd5e1;
+            color: #334155;
+            font-weight: bold;
+        }
+
+        .status span.on {
+            background: #bbf7d0;
+            color: #166534;
+        }
+
+        #clear {
+            flex: 0 0 auto;
+            height: 38px;
+            padding: 0 16px;
+            background: #64748b;
+            box-shadow: 0 3px 0 #334155;
+        }
+
+        @media (max-width: 900px) {
+            .keyboard-1 {
+                padding: 12px;
+                overflow-x: auto;
+            }
+
+            #keyboard {
+                min-width: 750px;
+            }
+
+            #display {
+                min-width: 100%;
+            }
+
+            button {
+                height: 48px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="keyboard-1">
+
+        <textarea id="display" readonly
+            placeholder="Bu yerda yozgan matningiz ko‘rinadi..."></textarea>
+
+        <div id="keyboard">
+
+            <div class="key-row">
+                <button data-key="Esc">Esc</button>
+                <button data-key="F1">F1</button>
+                <button data-key="F2">F2</button>
+                <button data-key="F3">F3</button>
+                <button data-key="F4">F4</button>
+                <button data-key="F5">F5</button>
+                <button data-key="F6">F6</button>
+                <button data-key="F7">F7</button>
+                <button data-key="F8">F8</button>
+                <button data-key="F9">F9</button>
+                <button data-key="F10">F10</button>
+                <button data-key="F11">F11</button>
+                <button data-key="F12">F12</button>
+                <button data-key="PrtSc">PrtSc</button>
+                <button data-key="Delete">Del</button>
+            </div>
+
+            <div class="key-row">
+                <button data-key=""></button>
+                <button data-key="1">1</button>
+                <button data-key="2">2</button>
+                <button data-key="3">3</button>
+                <button data-key="4">4</button>
+                <button data-key="5">5</button>
+                <button data-key="6">6</button>
+                <button data-key="7">7</button>
+                <button data-key="8">8</button>
+                <button data-key="9">9</button>
+                <button data-key="0">0</button>
+                <button data-key="-">-</button>
+                <button data-key="=">=</button>
+                <button data-key="Backspace" id="backspace">Backspace</button>
+            </div>
+
+            <div class="key-row">
+                <button data-key="Tab" class="key-wide">Tab</button>
+                <button data-key="Q">Q</button>
+                <button data-key="W">W</button>
+                <button data-key="E">E</button>
+                <button data-key="R">R</button>
+                <button data-key="T">T</button>
+                <button data-key="Y">Y</button>
+                <button data-key="U">U</button>
+                <button data-key="I">I</button>
+                <button data-key="O">O</button>
+                <button data-key="P">P</button>
+                <button data-key="[">[</button>
+                <button data-key="]">]</button>
+                <button data-key="\\">\</button>
+            </div>
+
+            <div class="key-row">
+                <button data-key="Caps Lock" class="key-extra-wide">Caps Lock</button>
+                <button data-key="A">A</button>
+                <button data-key="S">S</button>
+                <button data-key="D">D</button>
+                <button data-key="F">F</button>
+                <button data-key="G">G</button>
+                <button data-key="H">H</button>
+                <button data-key="J">J</button>
+                <button data-key="K">K</button>
+                <button data-key="L">L</button>
+                <button data-key=";">;</button>
+                <button data-key="'">'</button>
+                <button data-key="Enter" id="enter" class="key-extra-wide">Enter</button>
+            </div>
+
+            <div class="key-row">
+                <button data-key="Shift" class="key-extra-wide">Shift</button>
+                <button data-key="Z">Z</button>
+                <button data-key="X">X</button>
+                <button data-key="C">C</button>
+                <button data-key="V">V</button>
+                <button data-key="B">B</button>
+                <button data-key="N">N</button>
+                <button data-key="M">M</button>
+                <button data-key=",">,</button>
+                <button data-key=".">.</button>
+                <button data-key="/">/</button>
+                <button data-key="Shift" class="key-extra-wide">Shift</button>
+            </div>
+
+            <div class="key-row">
+                <button data-key="Ctrl" class="key-wide">Ctrl</button>
+                <button data-key="Fn">Fn</button>
+                <button data-key="Win">Win</button>
+                <button data-key="Alt" class="key-wide">Alt</button>
+                <button data-key=" " id="space">SPACE</button>
+                <button data-key="Alt" class="key-wide">Alt</button>
+                <button data-key="Fn">Fn</button>
+                <button data-key="Ctrl" class="key-wide">Ctrl</button>
+            </div>
+
+        </div>
+
+        <div class="keyboard-info">
+            <div class="status">
+                <span id="capsStatus">Caps Lock: OFF</span>
+                <span id="shiftStatus">Shift: OFF</span>
+            </div>
+
+            <button id="clear" type="button">Matnni tozalash</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById("display");
+    const keyboard = document.getElementById("keyboard");
+    const capsStatus = document.getElementById("capsStatus");
+    const shiftStatus = document.getElementById("shiftStatus");
+    const clearButton = document.getElementById("clear");
+
+    let capsLock = false;
+    let shift = false;
+
+    // Shift bosilganda o'zgaradigan belgilar
+    const shiftMap = {
+        "`": "~",
+        "1": "!",
+        "2": "@",
+        "3": "#",
+        "4": "$",
+        "5": "%",
+        "6": "^",
+        "7": "&",
+        "8": "*",
+        "9": "(",
+        "0": ")",
+        "-": "_",
+        "=": "+",
+        "[": "{",
+        "]": "}",
+        "\\": "|",
+        ";": ":",
+        "'": '"',
+        ",": "<",
+        ".": ">",
+        "/": "?"
+    };
+
+    // Tanlangan matnni almashtirish yoki kursor joyiga yozish
+    function insertText(text) {
+        const start = display.selectionStart ?? display.value.length;
+        const end = display.selectionEnd ?? start;
+
+        display.setRangeText(text, start, end, "end");
+        display.focus();
+    }
+
+    // Caps Lock va Shift indikatorlarini yangilash
+    function updateStatus() {
+        capsStatus.textContent = "Caps Lock: " + (capsLock ? "ON" : "OFF");
+        shiftStatus.textContent = "Shift: " + (shift ? "ON" : "OFF");
+
+        capsStatus.classList.toggle("on", capsLock);
+        shiftStatus.classList.toggle("on", shift);
+
+        document.querySelectorAll('[data-key="Caps Lock"]')
+            .forEach(btn => btn.classList.toggle("active-key", capsLock));
+
+        document.querySelectorAll('[data-key="Shift"]')
+            .forEach(btn => btn.classList.toggle("active-key", shift));
+    }
+
+    // Kursor turgan joydan oldingi belgini o'chirish
+    function backspace() {
+        const start = display.selectionStart;
+        const end = display.selectionEnd;
+
+        if (start !== end) {
+            display.setRangeText("", start, end, "start");
+        } else if (start > 0) {
+            display.setRangeText("", start - 1, start, "start");
+        }
+
+        display.focus();
+    }
+
+    // Kursor turgan joydagi belgini o'chirish
+    function deleteCharacter() {
+        const start = display.selectionStart;
+        const end = display.selectionEnd;
+
+        if (start !== end) {
+            display.setRangeText("", start, end, "start");
+        } else if (start < display.value.length) {
+            display.setRangeText("", start, start + 1, "start");
+        }
+
+        display.focus();
+    }
+
+    keyboard.addEventListener("click", function (event) {
+        const btn = event.target.closest("button[data-key]");
+
+        if (!btn) return;
+
+        const key = btn.dataset.key;
+
+        // Caps Lock yoqish/o'chirish
+        if (key === "Caps Lock") {
+            capsLock = !capsLock;
+            updateStatus();
+            return;
+        }
+
+        // Shift yoqish/o'chirish
+        if (key === "Shift") {
+            shift = !shift;
+            updateStatus();
+            return;
+        }
+
+        // Backspace
+        if (key === "Backspace") {
+            backspace();
+            return;
+        }
+
+        // Delete
+        if (key === "Delete") {
+            deleteCharacter();
+            return;
+        }
+
+        // Enter
+        if (key === "Enter") {
+            insertText("\n");
+            shift = false;
+            updateStatus();
+            return;
+        }
+
+        // Tab
+        if (key === "Tab") {
+            insertText("    ");
+            shift = false;
+            updateStatus();
+            return;
+        }
+
+        // Bo'sh joy
+        if (key === " ") {
+            insertText(" ");
+            shift = false;
+            updateStatus();
+            return;
+        }
+
+        // Esc Shift holatini bekor qiladi
+        if (key === "Esc") {
+            shift = false;
+            updateStatus();
+            return;
+        }
+
+        // Boshqa maxsus tugmalar matnga belgi yozmaydi
+        const specialKeys = [
+            "Ctrl", "Alt", "Fn", "Win", "PrtSc",
+            "F1", "F2", "F3", "F4", "F5", "F6",
+            "F7", "F8", "F9", "F10", "F11", "F12"
+        ];
+
+        if (specialKeys.includes(key)) {
+            return;
+        }
+
+        let character = key;
+
+        // Harflarda Caps Lock va Shift birgalikda ishlaydi
+        if (/^[a-z]$/i.test(key)) {
+            const makeUppercase = capsLock !== shift;
+            character = makeUppercase
+                ? key.toUpperCase()
+                : key.toLowerCase();
+        } else if (shift && shiftMap[key]) {
+            // Raqamlar va tinish belgilarini almashtirish
+            character = shiftMap[key];
+        }
+
+        insertText(character);
+
+        // Shift faqat keyingi belgigacha ishlaydi
+        if (shift) {
+            shift = false;
+            updateStatus();
+        }
+    });
+
+    // Barcha matnni tozalash
+    clearButton.addEventListener("click", function () {
+        display.value = "";
+        display.focus();
+    });
+
+    updateStatus();
+</script>
+
+</body>
+</html>
